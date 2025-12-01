@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noon Express - WhatsApp Delivery Confirmation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #e5ddd5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .whatsapp-header {
+            background: #075e54;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .whatsapp-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ffc400;
+            padding: 8px;
+        }
+
+        .header-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .header-info p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .chat-container {
+            background: #e5ddd5;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><text x="10" y="50" font-size="40">💬</text></svg>');
+            padding: 20px;
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.incoming {
+            justify-content: flex-start;
+        }
+
+        .message.outgoing {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .message.incoming .message-bubble {
+            background: white;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.outgoing .message-bubble {
+            background: #dcf8c6;
+            border-radius: 8px 0 8px 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #303030;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #667781;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .noon-branding {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .noon-logo {
+            background: #ffc400;
+            color: #000;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .verified-badge {
+            color: #25d366;
+            font-size: 12px;
+        }
+
+        .delivery-card {
+            background: #f7f7f7;
+            border-left: 4px solid #ffc400;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+        }
+
+        .delivery-card h4 {
+            font-size: 13px;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .delivery-info {
+            font-size: 12px;
+            color: #667781;
+            line-height: 1.6;
+        }
+
+        .delivery-info strong {
+            color: #000;
+        }
+
+        .quick-reply-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-reply-btn {
+            background: white;
+            border: 1px solid #ffc400;
+            color: #000;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .quick-reply-btn:hover {
+            background: #ffc400;
+            transform: scale(1.02);
+        }
+
+        .quick-reply-btn.primary {
+            background: #ffc400;
+            border-color: #ffc400;
+        }
+
+        .quick-reply-btn.primary:hover {
+            background: #e6b000;
+            border-color: #e6b000;
+        }
+
+        .tracking-link {
+            color: #0088cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .emoji {
+            font-size: 16px;
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .driver-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ffc400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .driver-details {
+            flex: 1;
+        }
+
+        .driver-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .driver-rating {
+            font-size: 11px;
+            color: #667781;
+        }
+
+        .timestamp {
+            text-align: center;
+            color: #667781;
+            font-size: 12px;
+            margin: 20px 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- WhatsApp Header -->
+        <div class="whatsapp-header">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="20" fill="#FFC400"/>
+                <path d="M20 12C15.6 12 12 15.6 12 20C12 21.4 12.4 22.7 13 23.8L12 28L16.3 27C17.4 27.6 18.7 28 20 28C24.4 28 28 24.4 28 20C28 15.6 24.4 12 20 12ZM24.5 23.5C24.3 24.1 23.3 24.6 22.8 24.7C22.4 24.7 21.9 24.9 20 24C17.7 23 16.1 20.7 16 20.5C15.9 20.4 15.1 19.3 15.1 18.2C15.1 17.1 15.7 16.5 15.9 16.3C16.1 16.1 16.4 16 16.6 16C16.7 16 16.9 16 17 16C17.2 16 17.4 16 17.6 16.5C17.8 17 18.3 18.1 18.4 18.2C18.5 18.3 18.5 18.5 18.4 18.6C18.3 18.8 18.3 18.9 18.1 19.1C18 19.2 17.8 19.4 17.7 19.5C17.6 19.6 17.4 19.8 17.6 20C17.8 20.3 18.3 21.1 19 21.7C19.9 22.4 20.7 22.7 21 22.8C21.2 22.9 21.4 22.9 21.5 22.7C21.7 22.5 22.1 22 22.3 21.8C22.5 21.5 22.7 21.6 22.9 21.7C23.1 21.8 24.2 22.3 24.4 22.4C24.6 22.5 24.8 22.6 24.8 22.7C24.9 22.9 24.9 23.4 24.5 23.5Z" fill="#000"/>
+            </svg>
+            <div class="header-info">
+                <h3>Noon Express</h3>
+                <p>Business Account</p>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-container">
+            <div class="timestamp">Today</div>
+
+            <!-- Message 1: Customer Engagement & Confirmation (T-12 to 24 hours) -->
+            <div class="message incoming">
+                <div class="message-bubble">
+                    <div class="noon-branding">
+                        <span class="noon-logo">noon</span>
+                        <span class="verified-badge">✓ Verified Business</span>
+                    </div>
+                    <div class="message-text">
+                        <span class="emoji">📦</span> <strong>Your order is scheduled for delivery tomorrow!</strong>
+                    </div>
+                    <div class="delivery-card">
+                        <h4>Order #N-2024-12345</h4>
+                        <div class="delivery-info">
+                            <strong>Delivery Date:</strong> Tomorrow, Dec 2<br>
+                            <strong>Items:</strong> 3 items<br>
+                            <strong>Amount:</strong> SAR 450.00 (COD)
+                        </div>
+                    </div>
+                    <div class="message-text" style="margin-top: 12px;">
+                        Please confirm your delivery details:
+                    </div>
+                    <div class="quick-reply-buttons">
+                        <button class="quick-reply-btn primary">✓ Approve delivery</button>
+                        <button class="quick-reply-btn">📅 Reschedule (up to 2 days)</button>
+                        <button class="quick-reply-btn">❌ Cancel order</button>
+                    </div>
+                    <div class="message-time">Yesterday, 3:00 PM</div>
+                </div>
+            </div>
+
+            <!-- Message 2: Customer Response - Approve -->
+            <div class="message outgoing">
+                <div class="message-bubble">
+                    <div class="message-text">
+                        ✓ Approve delivery
+                    </div>
+                    <div class="message-time">Yesterday, 3:05 PM</div>
+                </div>
+            </div>
+
+            <!-- Message 3: Delivery Location Confirmation -->
+            <div class="message incoming">
+                <div class="message-bubble">
+                    <div class="noon-branding">
+                        <span class="noon-logo">noon</span>
+                    </div>
+                    <div class="message-text">
+                        <span class="emoji">📍</span> <strong>Please confirm your delivery location:</strong>
+                    </div>
+                    <div class="delivery-card">
+                        <div class="delivery-info">
+                            Building 12, Al Nakheel District<br>
+                            Riyadh, 12345<br>
+                            Saudi Arabia
+                        </div>
+                    </div>
+                    <div class="quick-reply-buttons">
+                        <button class="quick-reply-btn primary">✓ Address is correct</button>
+                        <button class="quick-reply-btn">📝 Update address</button>
+                    </div>
+                    <div class="message-time">Yesterday, 3:05 PM</div>
+                </div>
+            </div>
+
+            <!-- Message 4: Customer Confirms Address -->
+            <div class="message outgoing">
+                <div class="message-bubble">
+                    <div class="message-text">
+                        ✓ Address is correct
+                    </div>
+                    <div class="message-time">Yesterday, 3:06 PM</div>
+                </div>
+            </div>
+
+            <!-- Message 5: Confirmation Success -->
+            <div class="message incoming">
+                <div class="message-bubble">
+                    <div class="noon-branding">
+                        <span class="noon-logo">noon</span>
+                    </div>
+                    <div class="message-text">
+                        <span class="emoji">✅</span> <strong>Great! Your delivery is confirmed.</strong><br><br>
+                        We'll send you a reminder a few hours before delivery.
+                    </div>
+                    <div class="message-time">Yesterday, 3:06 PM</div>
+                </div>
+            </div>
+
+            <div class="timestamp">Today</div>
+
+            <!-- Message 6: COD Readiness Reminder (T-2 to 4 hours) -->
+            <div class="message incoming">
+                <div class="message-bubble">
+                    <div class="noon-branding">
+                        <span class="noon-logo">noon</span>
+                    </div>
+                    <div class="message-text">
+                        <span class="emoji">💰</span> <strong>COD Reminder</strong><br><br>
+                        Your order will be delivered today. Please ensure you have <strong>SAR 450.00</strong> cash ready for payment.
+                    </div>
+                    <div class="delivery-card">
+                        <h4>Order #N-2024-12345</h4>
+                        <div class="delivery-info">
+                            <strong>Amount Due:</strong> SAR 450.00<br>
+                            <strong>Estimated Delivery:</strong> Today, afternoon
+                        </div>
+                    </div>
+                    <div class="message-text" style="margin-top: 12px;">
+                        Don't have cash? You can pay online:
+                    </div>
+                    <div class="quick-reply-buttons">
+                        <button class="quick-reply-btn primary">💳 Pay online now</button>
+                        <button class="quick-reply-btn">✓ Cash is ready</button>
+                    </div>
+                    <div class="message-time">10:30 AM</div>
+                </div>
+            </div>
+
+            <!-- Message 7: Customer Chooses Online Payment -->
+            <div class="message outgoing">
+                <div class="message-bubble">
+                    <div class="message-text">
+                        💳 Pay online now
+                    </div>
+                    <div class="message-time">10:32 AM</div>
+                </div>
+            </div>
+
+            <!-- Message 8: Online Payment Integration -->
+            <div class="message incoming">
+                <div class="message-bubble">
+                    <div class="noon-branding">
+                        <span class="noon-logo">noon</span>
+                    </div>
+                    <div class="message-text">
+                        <span class="emoji">💳</span> <strong>Complete your payment</strong><br><br>
+                        Click the link below to pay securely online. This link is valid until delivery.
+                    </div>
+                    <div class="delivery-card" style="background: #e3f2fd; border-left-color: #2196f3;">
+                        <div class="delivery-info">
+                            <strong>Amount:</strong> SAR 450.00<br>
+                            <strong>Payment Link:</strong><br>
+                            <a href="#" class="tracking-link">🔗 pay.noon.com/order/N-2024-12345</a>
+                        </div>
+                    </div>
+                    <div class="message-text" style="margin-top: 12px;">
+                        After payment, you'll receive an OTP to show the courier for verification.
+                    </div>
+                    <div class="message-time">10:32 AM</div>
+                </div>
+            </div>
+
+            <!-- Message 9: Payment Successful -->
+            <div class="message incoming">
+                <div class="message-bubble">
+                    <div class="noon-branding">
+                        <span class="noon-logo">noon</span>
+                    </div>
+                    <div class="message-text">
+                        <span class="emoji">✅</span> <strong>Payment successful!</strong><br><br>
+                        Your OTP for delivery verification:
+                    </div>
+                    <div class="delivery-card" style="background: #e8f5e9; border-left-color: #4caf50;">
+                        <h4 style="font-size: 24px; text-align: center; letter-spacing: 4px; color: #2e7d32;">
+                            5 8 3 9
+                        </h4>
+                        <div class="delivery-info" style="text-align: center; margin-top: 8px;">
+                            Show this code to the courier
+                        </div>
+                    </div>
+                    <div class="message-text" style="margin-top: 12px;">
+                        Your order will be delivered today. No cash needed!
+                    </div>
+                    <div class="message-time">10:35 AM</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
